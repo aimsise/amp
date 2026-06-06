@@ -30,7 +30,12 @@ a process engine.
    `references/wordbank.md`) into ONE enriched prompt. Fill only the slots that
    are obvious at a glance — a SoT path if one is named or clearly present, a
    test command if obvious, the scope from the request. If a slot is not
-   obvious, write a one-line assumption instead; do NOT interrogate the user.
+   obvious, write a one-line assumption instead; do NOT interrogate the user. The
+   one exception: if the prompt names no target at all (e.g. "make it better",
+   "it's not working") and nothing in context resolves one, ask ONE tight
+   clarifying question rather than invent a target. But if it points at
+   something — "this function", "my PR", "the X" — assume that resolves in the
+   live session and proceed; do not clarify.
 5. **Show one line** for transparency, not as a gate:
    `amp → <the enriched prompt>`.
 6. **Run** the enriched prompt. If the raw request itself asks for an

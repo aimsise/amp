@@ -20,7 +20,8 @@ instructions, not decoration. Inject the SMALLEST set that fits; right-sizing
 
 ## design
 
-- `via ultracode`, "ground in `<SoT>`", "generate N independent proposals from
+- `via ultracode`, "ground in `<SoT>` — but if no in-repo SoT exists, state
+  assumptions and produce a self-contained plan", "generate N independent proposals from
   different angles → adversarial judge → synthesize the winner", "reason
   deeply", "write to `<out>`; do not implement or commit"
 
