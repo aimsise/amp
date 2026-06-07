@@ -51,8 +51,8 @@ Right-sizing overrides everything. amp is opt-in, lean, and self-contained
 
 ## Why amp — verified, not vibes
 
-In a blind head-to-head against an always-on prompt optimizer, amp won **21 of 24**
-prompts (mean result-quality delta **+1.38 vs +0.26**, judged blind across three
+In a blind head-to-head against an always-on prompt optimizer, amp **won every
+category** (mean result-quality delta **+1.38 vs +0.26**, judged blind across three
 lenses). The reusable harness, test set, and full results live in
 [`evals/`](evals/).
 
