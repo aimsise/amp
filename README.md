@@ -16,10 +16,12 @@ Via [skills.sh](https://www.skills.sh/):
 npx skills add aimsise/amp
 ```
 
-Or manually — clone into your Claude Code skills directory:
+Or, for local development, clone the repo and symlink the skill into your
+Claude Code skills directory (the skill lives under `skills/amp/`):
 
 ```bash
-git clone https://github.com/aimsise/amp ~/.claude/skills/amp
+git clone https://github.com/aimsise/amp ~/src/amp
+ln -s ~/src/amp/skills/amp ~/.claude/skills/amp
 ```
 
 ## Usage
@@ -30,7 +32,7 @@ git clone https://github.com/aimsise/amp ~/.claude/skills/amp
 
 amp classifies the prompt (`trivial | implement | debug | design | research |
 review`), splices in the right-sized word set (see
-[`references/wordbank.md`](references/wordbank.md)), shows the enriched prompt on
+[`skills/amp/references/wordbank.md`](skills/amp/references/wordbank.md)), shows the enriched prompt on
 one line for transparency, and runs it. Trivial and conversational prompts pass
 straight through untouched.
 
