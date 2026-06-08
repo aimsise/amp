@@ -1,0 +1,4 @@
+# Code owners for aimsise/amp.
+# Every change to any path requires review from the repo owner
+# before a pull request can be merged into a protected branch.
+* @aimsise
