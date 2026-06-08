@@ -1,0 +1,118 @@
+# CI for the amp skill (public repo).
+#
+# Gates merges into main. Every check is a clear pass/fail and FAILS the build on
+# any violation. Runs on Node built-ins plus first-party actions; needs no
+# secrets.
+#
+# SECURITY MODEL (public repo, untrusted fork PRs):
+#   * Triggered by `pull_request` (NEVER pull_request_target): a fork PR runs the
+#     base-branch workflow with a READ-ONLY, secret-less token. We never grant
+#     write access to fork-provided code.
+#   * Top-level least-privilege permissions: contents: read only.
+#   * No secrets referenced anywhere. The checks only READ files; they never
+#     execute repo-provided code, so a malicious fork PR's blast radius is nil.
+#   * Every third-party action is pinned to a full commit SHA (supply chain).
+#
+# REQUIRED STATUS CHECK CONTEXT: the gating job's name -> "ci". Wire "ci" as the
+# required check in the branch protection rule / ruleset for main. (The advisory
+# "external-links" job is intentionally NOT required.)
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Least privilege for the WHOLE workflow. Jobs do not widen this.
+permissions:
+  contents: read
+
+# One in-flight run per ref; cancel superseded runs.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # GATING job (the required status check: "ci"). Deterministic, offline,
+  # dependency-free — must pass to merge.
+  # ---------------------------------------------------------------------------
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '25'
+
+      # 1. PII / secret guard (home paths POSIX+Windows, emails, committed
+      #    secrets). Generic patterns only; an inline `pii-ignore` marker waives
+      #    a known-good line.
+      - name: PII / secret guard
+        run: node .github/scripts/check-pii.mjs
+
+      # 2 + 3 + 5 + 6(in-repo). Frontmatter, testset, skill structure, and
+      #    relative/in-repo markdown links (in-repo links are FATAL here).
+      - name: Repo structure & content validation
+        run: node .github/scripts/check-structure.mjs
+
+      # 4. Eval harness ES-module syntax — parsed AS A MODULE (not lenient bare
+      #    `node --check`, which would not assert module validity). Runtime
+      #    globals and top-level await/return tolerated; real syntax errors fail.
+      - name: Eval harness ESM syntax
+        run: node .github/scripts/check-harness-syntax.mjs
+
+  # ---------------------------------------------------------------------------
+  # ADVISORY job (NOT required): external http(s) link liveness. Separate +
+  # continue-on-error so transient network / rate-limited hosts can NEVER gate a
+  # merge. In-repo links are already validated fatally in the `ci` job above.
+  # ---------------------------------------------------------------------------
+  external-links:
+    name: external-links
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    # Explicit least-privilege for this advisory job (defense-in-depth; makes the
+    # read-only intent local rather than relying on the top-level default).
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      # Cache lychee results between runs to cut network calls and reduce
+      # flakiness. Primary key is content-hashed so an unchanged doc set HITS the
+      # cache directly; restore-keys falls back to the newest prior cache when the
+      # docs change. A miss simply re-checks and never fails the job.
+      - name: Restore lychee cache
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        with:
+          path: .lycheecache
+          key: lychee-${{ hashFiles('README.md', 'evals/**/*.md', 'skills/**/*.md') }}
+          restore-keys: |
+            lychee-
+
+      # External link check with retries + caching, network-tolerant.
+      - name: Check external links (retries + cache, non-flaky)
+        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2.8.0
+        with:
+          args: >-
+            --config .github/lychee.toml
+            --no-progress
+            'README.md'
+            'evals/**/*.md'
+            'skills/**/*.md'
+          # Advisory only: do not fail even on genuinely dead external links.
+          fail: false
+          jobSummary: true

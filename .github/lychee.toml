@@ -1,0 +1,31 @@
+# lychee config — EXTERNAL link checking only, tuned to be non-flaky.
+#
+# In-repo / relative links are validated (fatally) by
+# .github/scripts/check-structure.mjs with zero dependencies; lychee here only
+# reaches out to http(s) URLs, and the workflow runs it as a NON-BLOCKING step
+# (fail = false) so third-party / network flakiness never gates a merge.
+
+# Retry transient failures before giving up.
+max_retries = 3
+retry_wait_time = 2          # seconds, backs off between retries
+timeout = 20                 # seconds per request
+
+# Be a polite, real-looking client; some hosts 403 default bots.
+user_agent = "Mozilla/5.0 (compatible; lychee link-checker; +https://github.com/lycheeverse/lychee)"
+max_concurrency = 8
+
+# Treat these as alive: 2xx success, plus 403/429 because rate-limits, auth
+# walls, and anti-bot challenges are NOT dead links. 5xx is deliberately NOT
+# accepted, so a genuinely broken server still shows up in the (advisory) report
+# instead of being silently masked.
+accept = ["200..=299", "403", "429"]
+
+# Only the public web; do not try to resolve relative file links here (those are
+# the structure script's job) and skip mail links.
+scheme = ["https", "http"]
+exclude_path = [".git"]
+exclude_mail = true
+
+# Cache results between runs to cut network calls and reduce flakiness.
+cache = true
+max_cache_age = "2d"
