@@ -4,6 +4,10 @@ The minimal quality-driving words to inject per task type. These are concise
 instructions, not decoration. Inject the SMALLEST set that fits; right-sizing
 (see SKILL.md) overrides this list — never bolt orchestration onto a small task.
 
+`via ultracode` below = Claude Code's multi-agent Workflow; on agents without it,
+read it as "decompose into ordered sub-steps and do them in sequence" (see
+SKILL.md Right-sizing). The other injected words are agent-agnostic.
+
 ## implement / debug
 
 - `via ultracode` — multi-agent orchestration. ONLY if the task is genuinely
