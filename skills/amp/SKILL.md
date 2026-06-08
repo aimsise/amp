@@ -58,9 +58,9 @@ template. A capable model already grounds, verifies, and withholds destructive
 actions on its own; only inject the words that genuinely add to what it would
 already do.
 
-`ultracode` is Claude Code's built-in multi-agent Workflow. On agents without
-it, read every "via ultracode" below as "split the task into ordered sub-steps
-and reason through them in sequence" — never as a hard dependency.
+`via ultracode` — the orchestration cue. Emit it verbatim ONLY on Claude Code
+(fires Claude's multi-agent Workflow). On any other host, do NOT emit it — use
+its own parallel sub-agents, else sequential sub-steps. Never a hard dependency.
 
 ## Keep it lean
 
